@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<!-- Based on code presented by Wes Bos in his JS tutorial.
+// I made it working for touch events as well as mouse events anad added
+// possibility to clear the drawing
+// Beta version of course
+//Please, write in comments what other functions should I add? -->
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML5 Canvas</title>
+</head>
+<style>
+  html, body {
+    margin:0;
+    padding: 0;
+    overflow: hidden;
+  }
+  canvas {
+    position: fixed;
+  }
+  input {
+    width: 100vw;
+    height: 100px;
+    color: white;
+    background-color: purple;
+    font-size: 200%;
+    position: absolute;
+    z-index: 999;
+  }
+</style>
+
+<body>
+<input id="button" type="button" value="CLEAR">
+<canvas id="draw"></canvas>
+
+<script>
+  const canvas = document.querySelector('#draw');
+  const ctx = canvas.getContext('2d'); // może być 3d
+  canvas.width = window.innerWidth; // szerokość i wysokość okna przeglądarki
+  canvas.height = window.innerHeight;
+  let isDrawing = false;
+  let lastX = 0;
+  let lastY = 0;
+  let hue = 0;
+  ctx.strokeStyle = "#BADA55"; // main color
+  ctx.lineJoin = "round"; //or square
+  ctx.lineCap = "round"; //linia ma okrągłe końcóweczki
+  ctx.lineWidth = 30;
+  ctx.globalCompositeOperation = 'source-over'; // special effects
+  function draw(e) {
+    if(!isDrawing) return; // dont proceed when mouse is not clicked while moving
+    ctx.strokeStyle = `hsl(${hue}, 100%, 50%)`; // kolorek zmienny
+    ctx.beginPath();
+    // start from
+    ctx.moveTo(lastX, lastY);
+    // go to
+    let X = e.offsetX || e.changedTouches[0].pageX;
+    let Y = e.offsetY || e.changedTouches[0].pageY;
+    ctx.lineTo(X, Y);
+    ctx.stroke();
+    lastX = e.offsetX || e.changedTouches[0].pageX;
+    lastY = e.offsetY || e.changedTouches[0].pageY;
+    hue++; // o, tutaj sie kolorek zmienia
+    if (hue > 360) { // a tutaj warunkek, żeby hue nie rósł w nieskończoność
+      hue = 0;
+    }
+  }
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('touchmove', draw);
+  canvas.addEventListener('mousedown', (e) => { // dla myszek
+    isDrawing = true;
+    [lastX, lastY] = [e.offsetX, e.offsetY]; // przypisanie dwóch zmiennych na raz
+  });
+  canvas.addEventListener('touchstart', (e) => { // dla touchpadów
+    isDrawing = true;
+    [lastX, lastY] = [e.changedTouches[0].pageX, e.changedTouches[0].pageY]; // przypisanie dwóch zmiennych na raz
+  });
+  canvas.addEventListener('mouseup', () => isDrawing = false);
+  canvas.addEventListener('mouseout', () => isDrawing = false);
+  canvas.addEventListener('touchend', () => isDrawing = false);
+  canvas.addEventListener('touchleave', () => isDrawing = false);
+  document.getElementById('button').addEventListener('click', function() { // wyczyść obrazek po naciśniciu guziczka
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
+</script>
+</body>
+</html>
